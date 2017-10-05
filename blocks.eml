@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component inheritJdk="true">
+	<exclude-output/>
+	<contentEntry url="file://$MODULE_DIR$"/>
+	<lib name="jme3-core-3.1.0-stable.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/libs/jme3-core-3.1.0-stable.jar!/"/>
+	</lib>
+	<lib name="jme3-desktop-3.1.0-stable.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/libs/jme3-desktop-3.1.0-stable.jar!/"/>
+	</lib>
+	<lib name="jme3-lwjgl-3.1.0-stable.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/libs/jme3-lwjgl-3.1.0-stable.jar!/"/>
+	</lib>
+	<lib name="lwjgl-2.9.3.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/libs/lwjgl-2.9.3.jar!/"/>
+	</lib>
+	<lib name="lwjgl-platform-2.9.3-natives-windows.jar" scope="COMPILE">
+		<relative-module-cls project-related="jar://$PROJECT_DIR$/libs/lwjgl-platform-2.9.3-natives-windows.jar!/"/>
+	</lib>
+</component>

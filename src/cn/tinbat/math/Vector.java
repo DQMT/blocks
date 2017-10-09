@@ -8,8 +8,14 @@ import com.jme3.math.Vector3f;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Vector implements Savable, Cloneable, Serializable {
+
+    enum AXIS {
+      X,Y,Z;
+    }
 
     public static final Vector ZERO = new Vector(0, 0, 0);
 
@@ -53,22 +59,6 @@ public class Vector implements Savable, Cloneable, Serializable {
         this.z = z;
     }
 
-    public Vector3f toVector3f() {
-        return new Vector3f(x, y, z);
-    }
-
-    public boolean isOdd() {
-        return (x + y + z) % 2 == 1 ? true : false;
-    }
-
-    public Vector3f toCubeLocation() {
-        return new Vector3f(x * SysConstant.Public.CUBE_SIZE * 2, y * SysConstant.Public.CUBE_SIZE * 2, z * SysConstant.Public.CUBE_SIZE * 2);
-    }
-
-    public static Vector3f newCubeVector3f() {
-        return new Vector3f(SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE);
-    }
-
     @Override
     public String toString() {
         return "[x=" + x + ",y=" + y + ",z=" + z + "]";
@@ -86,5 +76,98 @@ public class Vector implements Savable, Cloneable, Serializable {
     @Override
     public void read(JmeImporter jmeImporter) throws IOException {
 
+    }
+
+    public Vector clone() {
+        return new Vector(x, y, z);
+    }
+
+    public Vector3f toVector3f() {
+        return new Vector3f(x, y, z);
+    }
+
+    public boolean isOdd() {
+        return (x + y + z) % 2 != 0;
+    }
+
+    public Vector3f toCubeLocation() {
+        return new Vector3f(x * SysConstant.Public.CUBE_SIZE * 2, y * SysConstant.Public.CUBE_SIZE * 2, z * SysConstant.Public.CUBE_SIZE * 2);
+    }
+
+    public static Vector3f newCubeVector3f() {
+        return new Vector3f(SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE);
+    }
+
+    public Vector reverseX() {
+        return new Vector(-x, y, z);
+    }
+
+    public Vector reverseY() {
+        return new Vector(x, -y, z);
+    }
+
+    public Vector reverseZ() {
+        return new Vector(x, y, -z);
+    }
+
+    public Vector shift(){
+        return new Vector(z, x, y);
+    }
+
+    /**
+     * 以原点为中心
+     * 返回在this在八个卦限中8个小立方体的3*8个面上对应的向量组
+     * @return
+     */
+    public List<Vector> toCubeVectors() {
+        List<Vector> vectorList = new ArrayList<>();
+
+        Vector vector1 = this.clone();
+        vectorList.add(vector1);
+        vectorList.add(vector1.reverseX());
+        vectorList.add(vector1.reverseZ());
+        vectorList.add(vector1.reverseX().reverseZ());
+        vectorList.add(vector1.reverseY());
+        vectorList.add(vector1.reverseX().reverseY());
+        vectorList.add(vector1.reverseZ().reverseY());
+        vectorList.add(vector1.reverseX().reverseZ().reverseY());
+
+        Vector vector2 = this.shift();
+        vectorList.add(vector2);
+        vectorList.add(vector2.reverseX());
+        vectorList.add(vector2.reverseZ());
+        vectorList.add(vector2.reverseX().reverseZ());
+        vectorList.add(vector2.reverseY());
+        vectorList.add(vector2.reverseX().reverseY());
+        vectorList.add(vector2.reverseZ().reverseY());
+        vectorList.add(vector2.reverseX().reverseZ().reverseY());
+
+        Vector vector3 = vector2.shift();
+        vectorList.add(vector3);
+        vectorList.add(vector3.reverseX());
+        vectorList.add(vector3.reverseZ());
+        vectorList.add(vector3.reverseX().reverseZ());
+        vectorList.add(vector3.reverseY());
+        vectorList.add(vector3.reverseX().reverseY());
+        vectorList.add(vector3.reverseZ().reverseY());
+        vectorList.add(vector3.reverseX().reverseZ().reverseY());
+       return vectorList;
+
+    }
+
+    /**
+     * 创建一个围成立方体表面的向量组
+     * @param radius
+     * @return
+     */
+    public List<Vector> toCubeVectors(int radius) {
+        List<Vector> vectorList = new ArrayList<>();
+        for (int i = 0; i < radius; i++) {
+            for (int j = 0; j < radius; j++) {
+                Vector vt = new Vector(i, radius, j);
+                    vectorList.addAll(vt.toCubeVectors());
+            }
+        }
+        return vectorList;
     }
 }

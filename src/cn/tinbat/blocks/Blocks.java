@@ -69,7 +69,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
         player.setJumpSpeed(20);
         player.setFallSpeed(30);
         player.setGravity(30);
-        player.setPhysicsLocation(new Vector3f(4, 20, 4));
+        player.setPhysicsLocation(new Vector3f(1, 10, 1));
         bulletAppState.getPhysicsSpace().add(player);
     }
 
@@ -95,6 +95,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
     private void initScene() {
         viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
         makeFloor();
+        makeCage();
     }
 
     /**
@@ -112,9 +113,9 @@ public class Blocks extends SimpleApplication implements ActionListener {
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         Texture tex = assetManager.loadTexture("Textures/Terrain/Pond/Pond.jpg");
 
+        // 间隔材质便于观察
         if (vector.isOdd()) {
-//            mat.setColor("Color", ColorRGBA.Black);
-            mat.setTexture("ColorMap",tex);
+            mat.setTexture("ColorMap", tex);
         } else {
             mat.setColor("Color", ColorRGBA.White);
         }
@@ -144,15 +145,29 @@ public class Blocks extends SimpleApplication implements ActionListener {
     /**
      * 建造地板
      */
-    private void makeFloor() {
+    void makeFloor() {
+        makeCube(new Vector(0, 0, 0));
         for (int i = 0; i < 10; i++) {
             for (int j = 0; j < 10; j++) {
-                for (int k = 0; k < 10; k++) {
-                    Vector vt = new Vector(i, -k, j);
-                    makeCube(vt);
-                }
+//                for (int k = 0; k < 10; k++) {
+//                    Vector vt = new Vector(i, -k, j);
+//                    makeCube(vt);
+//                }
+                Vector vt = new Vector(i, 0, j);
+                makeCube(vt);
+                makeCube(vt.reverseX());
+                makeCube(vt.reverseZ());
+                makeCube(vt.reverseZ().reverseX());
 
             }
+        }
+    }
+
+    void makeCage() {
+        Vector vector = new Vector();
+        for (Vector v : vector.toCubeVectors(16)
+                ) {
+            makeCube(v);
         }
     }
 
@@ -205,9 +220,9 @@ public class Blocks extends SimpleApplication implements ActionListener {
         time += tpf;
         if (!delFlag && time > 10f) {
             deleteCube(new Vector(1, 0, 1));
-            deleteCube(new Vector(2, 0, 2));
-            deleteCube(new Vector(1, 0, 2));
-            deleteCube(new Vector(2, 0, 1));
+            deleteCube(new Vector(1, 0, -1));
+            deleteCube(new Vector(-1, 0, 1));
+            deleteCube(new Vector(-1, 0, -1));
             delFlag = true;
         }
         camDir.set(cam.getDirection()).multLocal(0.6f);

@@ -1,7 +1,7 @@
 package cn.tinbat.blocks;
 
 import cn.tinbat.constant.SysConstant;
-import cn.tinbat.math.Vector;
+import cn.tinbat.cube.Cube;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
@@ -29,9 +29,6 @@ import com.jme3.scene.shape.Box;
 import com.jme3.scene.shape.Sphere;
 import com.jme3.texture.Texture;
 
-/**
- * Created by tincat on 2017/10/5.
- */
 public class Blocks extends SimpleApplication implements ActionListener {
     private BulletAppState bulletAppState;
     private RigidBodyControl landscape;
@@ -43,7 +40,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
     private Vector3f camDir = new Vector3f();
     private Vector3f camLeft = new Vector3f();
     private double time = 0;
-    boolean delFlag = false;
+    boolean delFlag = true;
 
     private Node shootables;
     private Geometry mark;
@@ -67,12 +64,14 @@ public class Blocks extends SimpleApplication implements ActionListener {
 
         // 初始化场景
         initScene();
-        flyCam.setMoveSpeed(3);
+        flyCam.setMoveSpeed(1);
 
         //初始化玩家
         initPlayer();
 
+        initCrossHairs();
         setUpKeys();
+        initMark();
 
         // 开启调试模式，这样能够可视化观察物体之间的运动。
         //bulletAppState.setDebugEnabled(true);
@@ -80,7 +79,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
 
     private void initPlayer() {
 
-        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f, 6f, 1);
+        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f, 4f, 1);
         player = new CharacterControl(capsuleShape, 0.05f);
         player.setJumpSpeed(30);
         player.setFallSpeed(30);
@@ -105,7 +104,9 @@ public class Blocks extends SimpleApplication implements ActionListener {
         rootNode.addLight(sun);
     }
 
-    /** A red ball that marks the last spot that was "hit" by the "shot". */
+    /**
+     * A red ball that marks the last spot that was "hit" by the "shot".
+     */
     protected void initMark() {
         Sphere sphere = new Sphere(30, 30, 0.2f);
         mark = new Geometry("BOOM!", sphere);
@@ -114,7 +115,9 @@ public class Blocks extends SimpleApplication implements ActionListener {
         mark.setMaterial(mark_mat);
     }
 
-    /** A centred plus sign to help the player aim. */
+    /**
+     * A centred plus sign to help the player aim.
+     */
     protected void initCrossHairs() {
         setDisplayStatView(false);
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
@@ -122,7 +125,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
         ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);
         ch.setText("+"); // crosshairs
         ch.setLocalTranslation( // center
-                settings.getWidth() / 2 - ch.getLineWidth()/2, settings.getHeight() / 2 + ch.getLineHeight()/2, 0);
+                settings.getWidth() / 2 - ch.getLineWidth() / 2, settings.getHeight() / 2 + ch.getLineHeight() / 2, 0);
         guiNode.attachChild(ch);
     }
 
@@ -131,7 +134,8 @@ public class Blocks extends SimpleApplication implements ActionListener {
      */
     private void initScene() {
         viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
-        makeFloor(new Vector(10,3,10));
+        makeFloor(new Cube(10, 3, 10));
+        makeCube(new Cube(0, 5, 0));
         //makeCage();
         System.out.println(cubeCount);
     }
@@ -139,10 +143,10 @@ public class Blocks extends SimpleApplication implements ActionListener {
     /**
      * 在指定位置放置一个物理方块
      *
-     * @param vector 方块的位置
+     * @param cube 方块的位置
      */
-    private void makeCube(Vector vector) {
-        System.out.println("makeCube:" + vector.toString());
+    private void makeCube(Cube cube) {
+        System.out.println("makeCube:" + cube.toString());
         // 网格
         Box box = new Box(SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE);
         box.scaleTextureCoordinates(new Vector2f(1f, .5f));
@@ -152,16 +156,16 @@ public class Blocks extends SimpleApplication implements ActionListener {
         Texture tex = assetManager.loadTexture("Textures/Terrain/Pond/Pond.jpg");
 
         // 间隔材质便于观察
-        if (vector.isOdd()) {
+        if (cube.isOdd()) {
             mat.setTexture("ColorMap", tex);
         } else {
             mat.setColor("Color", ColorRGBA.White);
         }
 
         // 几何体
-        Geometry geom = new Geometry("cube" + vector.name(), box);
+        Geometry geom = new Geometry(cube.name(), box);
         geom.setMaterial(mat);
-        Vector3f loc = vector.toCubeLocation();
+        Vector3f loc = cube.toCubeLocation();
         geom.setLocalTranslation(loc);// 把方块放在指定位置
 
         // 刚体
@@ -174,21 +178,21 @@ public class Blocks extends SimpleApplication implements ActionListener {
         cubeCount++;
     }
 
-    private void deleteCube(Vector vector) {
-        System.out.println("deleteCube:" + vector.toString());
-        Geometry geom = (Geometry) shootables.getChild("cube" + vector.name());
+    private void deleteCube(Cube cube) {
+        System.out.println("deleteCube:" + cube.toString());
+        Geometry geom = (Geometry) shootables.getChild(cube.name());
         bulletAppState.getPhysicsSpace().remove(geom);
-        shootables.detachChildNamed("cube" + vector.name());
+        shootables.detachChildNamed(cube.name());
     }
 
     /**
      * 建造地板
      */
-    void makeFloor(Vector vector) {
-        for (int i = 0; i < vector.x; i++) {
-            for (int j = 0; j < vector.y; j++) {
-                for (int k = 0; k < vector.z; k++) {
-                    Vector vt = new Vector(i, -j, k);
+    void makeFloor(Cube cube) {
+        for (int i = 0; i < cube.x; i++) {
+            for (int j = 0; j < cube.y; j++) {
+                for (int k = 0; k < cube.z; k++) {
+                    Cube vt = new Cube(i, -j, k);
                     makeCube(vt);
                     makeCube(vt.reverseX());
                     makeCube(vt.reverseZ());
@@ -202,8 +206,8 @@ public class Blocks extends SimpleApplication implements ActionListener {
      * 建造立方笼
      */
     void makeCage() {
-        Vector vector = new Vector();
-        for (Vector v : vector.toCubeVectors(16)
+        Cube cube = new Cube();
+        for (Cube v : cube.toCubeVectors(16)
                 ) {
             makeCube(v);
         }
@@ -214,7 +218,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
      * add physics-controlled walking and jumping:
      */
     private void setUpKeys() {
-        inputManager.addMapping("Shoot", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addMapping("Shoot", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
         inputManager.addListener(this, "Shoot");
 
         inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
@@ -244,18 +248,16 @@ public class Blocks extends SimpleApplication implements ActionListener {
             shootables.collideWith(ray, results);
             // 4. Print the results
             System.out.println("----- Collisions? " + results.size() + "-----");
-            for (int i = 0; i < results.size(); i++) {
-                // For each hit, we know distance, impact point, name of geometry.
-                float dist = results.getCollision(i).getDistance();
-                Vector3f pt = results.getCollision(i).getContactPoint();
-                String hit = results.getCollision(i).getGeometry().getName();
-                System.out.println("* Collision #" + i);
-                System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
-            }
             // 5. Use the results (we mark the hit object)
             if (results.size() > 0) {
                 // The closest collision point is what was truly hit:
                 CollisionResult closest = results.getClosestCollision();
+                String hit = closest.getGeometry().getName();
+                float dist = closest.getDistance();
+                Vector3f pt = closest.getContactPoint();
+                System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
+                Cube hitCube = Cube.parseName(hit);
+                makeCube(hitCube.makeAdjacentCube(pt));
                 // Let's interact - we mark the hit with a red dot.
                 mark.setLocalTranslation(closest.getContactPoint());
                 rootNode.attachChild(mark);
@@ -289,18 +291,18 @@ public class Blocks extends SimpleApplication implements ActionListener {
     public void simpleUpdate(float tpf) {
         time += tpf;
         if (!delFlag && time > 10f) {
-            deleteCube(new Vector(1, 0, 1));
-            deleteCube(new Vector(1, 0, -1));
-            deleteCube(new Vector(-1, 0, 1));
-            deleteCube(new Vector(-1, 0, -1));
-            deleteCube(new Vector(1, 0, 0));
-            deleteCube(new Vector(1, 0, 0));
-            deleteCube(new Vector(-1, 0, 0));
-            deleteCube(new Vector(-1, 0, 0));
-            deleteCube(new Vector(0, 0, 1));
-            deleteCube(new Vector(0, 0, -1));
-            deleteCube(new Vector(0, 0, 1));
-            deleteCube(new Vector(0, 0, -1));
+            deleteCube(new Cube(1, 0, 1));
+            deleteCube(new Cube(1, 0, -1));
+            deleteCube(new Cube(-1, 0, 1));
+            deleteCube(new Cube(-1, 0, -1));
+            deleteCube(new Cube(1, 0, 0));
+            deleteCube(new Cube(1, 0, 0));
+            deleteCube(new Cube(-1, 0, 0));
+            deleteCube(new Cube(-1, 0, 0));
+            deleteCube(new Cube(0, 0, 1));
+            deleteCube(new Cube(0, 0, -1));
+            deleteCube(new Cube(0, 0, 1));
+            deleteCube(new Cube(0, 0, -1));
             delFlag = true;
         }
         camDir.set(cam.getDirection()).multLocal(0.6f);

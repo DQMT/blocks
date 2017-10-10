@@ -4,7 +4,7 @@
 
 # Q&A
 
-1.RuntimeException cause crash after starting the game:
+1.Game crash caused by RuntimeException: org.lwjgl.LWJGLException: Could not locate OpenAL library.
 
 Q= RuntimeException: org.lwjgl.LWJGLException: Could not locate OpenAL library.  
 

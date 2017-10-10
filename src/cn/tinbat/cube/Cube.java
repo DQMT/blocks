@@ -100,10 +100,6 @@ public class Cube implements Savable, Cloneable, Serializable {
         return new Vector3f(x * SysConstant.Public.CUBE_SIZE * 2, y * SysConstant.Public.CUBE_SIZE * 2, z * SysConstant.Public.CUBE_SIZE * 2);
     }
 
-    public static Vector3f newCubeVector3f() {
-        return new Vector3f(SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE);
-    }
-
     public Cube reverseX() {
         return new Cube(-x, y, z);
     }
@@ -179,27 +175,27 @@ public class Cube implements Savable, Cloneable, Serializable {
 
     public Cube makeAdjacentCube(Vector3f vector3f){
         System.out.print("makeAdjacentCube"+this.name()+vector3f);
-        if(MathUtil.compareFloat(vector3f.x,2*x+1)==0){
+        if(MathUtil.compareFloat(vector3f.x,2*SysConstant.Public.CUBE_SIZE*x+SysConstant.Public.CUBE_SIZE )==0){
             System.out.println("x+1");
             return new Cube(x+1,y,z);
         }
-        if(MathUtil.compareFloat(vector3f.x,2*x-1)==0){
+        if(MathUtil.compareFloat(vector3f.x,2*SysConstant.Public.CUBE_SIZE*x-SysConstant.Public.CUBE_SIZE )==0){
             System.out.println("x-1");
             return new Cube(x-1,y,z);
         }
-        if(MathUtil.compareFloat(vector3f.y,2*y+1)==0){
+        if(MathUtil.compareFloat(vector3f.y,2*SysConstant.Public.CUBE_SIZE*y+SysConstant.Public.CUBE_SIZE )==0){
             System.out.println("y+1");
             return new Cube(x,y+1,z);
         }
-        if(MathUtil.compareFloat(vector3f.y,2*y-1)==0){
+        if(MathUtil.compareFloat(vector3f.y,2*SysConstant.Public.CUBE_SIZE*y-SysConstant.Public.CUBE_SIZE)==0){
             System.out.println("y-1");
             return new Cube(x,y-1,z);
         }
-        if(MathUtil.compareFloat(vector3f.z,2*z+1)==0){
+        if(MathUtil.compareFloat(vector3f.z,2*SysConstant.Public.CUBE_SIZE*z+SysConstant.Public.CUBE_SIZE)==0){
             System.out.println("z+1");
             return new Cube(x,y,z+1);
         }
-        if(MathUtil.compareFloat(vector3f.z,2*z+1)==0){
+        if(MathUtil.compareFloat(vector3f.z,2*SysConstant.Public.CUBE_SIZE*z-SysConstant.Public.CUBE_SIZE)==0){
             System.out.println("z-1");
             return new Cube(x,y,z-1);
         }

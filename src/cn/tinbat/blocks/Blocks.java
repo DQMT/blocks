@@ -54,6 +54,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
         cam.lookAt(new Vector3f(2, 2, 0), Vector3f.UNIT_Y);
 
         bulletAppState = new BulletAppState();
+        bulletAppState.setSpeed(0.5f); //改变物理世界速度
         stateManager.attach(bulletAppState);
 
         shootables = new Node("Shootables");
@@ -64,7 +65,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
 
         // 初始化场景
         initScene();
-        flyCam.setMoveSpeed(1);
+        flyCam.setMoveSpeed(1f);
 
         //初始化玩家
         initPlayer();
@@ -79,10 +80,10 @@ public class Blocks extends SimpleApplication implements ActionListener {
 
     private void initPlayer() {
 
-        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f, 4f, 1);
-        player = new CharacterControl(capsuleShape, 0.05f);
+        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f * SysConstant.Public.CUBE_SIZE, 3.8f * SysConstant.Public.CUBE_SIZE, 1);
+        player = new CharacterControl(capsuleShape, 1f);
         player.setJumpSpeed(30);
-        player.setFallSpeed(30);
+        player.setFallSpeed(40);
         player.setGravity(98);
         player.setPhysicsLocation(new Vector3f(0, 10, 0));
         bulletAppState.getPhysicsSpace().add(player);
@@ -146,6 +147,11 @@ public class Blocks extends SimpleApplication implements ActionListener {
      * @param cube 方块的位置
      */
     private void makeCube(Cube cube) {
+        Geometry tryGeom = (Geometry) shootables.getChild(cube.name());
+        if (tryGeom != null) {
+            System.out.println("Cube already exists!");
+            return;
+        }
         System.out.println("makeCube:" + cube.toString());
         // 网格
         Box box = new Box(SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE);
@@ -159,7 +165,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
         if (cube.isOdd()) {
             mat.setTexture("ColorMap", tex);
         } else {
-            mat.setColor("Color", ColorRGBA.White);
+            mat.setColor("Color", ColorRGBA.Pink);
         }
 
         // 几何体
@@ -178,6 +184,11 @@ public class Blocks extends SimpleApplication implements ActionListener {
         cubeCount++;
     }
 
+    /**
+     * 从场景中删除方块
+     *
+     * @param cube
+     */
     private void deleteCube(Cube cube) {
         System.out.println("deleteCube:" + cube.toString());
         Geometry geom = (Geometry) shootables.getChild(cube.name());
@@ -218,9 +229,10 @@ public class Blocks extends SimpleApplication implements ActionListener {
      * add physics-controlled walking and jumping:
      */
     private void setUpKeys() {
-        inputManager.addMapping("Shoot", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
-        inputManager.addListener(this, "Shoot");
-
+        inputManager.addMapping("MouseLeft", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        inputManager.addListener(this, "MouseLeft");
+        inputManager.addMapping("MouseRight", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
+        inputManager.addListener(this, "MouseRight");
         inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
         inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_W));
@@ -238,7 +250,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
      * We do not walk yet, we just keep track of the direction the user pressed.
      */
     public void onAction(String binding, boolean isPressed, float tpf) {
-        if (binding.equals("Shoot") && !isPressed) {
+        if (binding.equals("MouseRight") && !isPressed) {
             // 1. Reset results list.
             CollisionResults results = new CollisionResults();
             // 2. Aim the ray from cam loc to cam direction.
@@ -265,6 +277,36 @@ public class Blocks extends SimpleApplication implements ActionListener {
                 // No hits? Then remove the red mark.
                 rootNode.detachChild(mark);
             }
+        } else if (binding.equals("MouseLeft") && !isPressed) {
+            // 1. Reset results list.
+            CollisionResults results = new CollisionResults();
+            // 2. Aim the ray from cam loc to cam direction.
+            Ray ray = new Ray(cam.getLocation(), cam.getDirection());
+            // 3. Collect intersections between Ray and Shootables in results list.
+            // DO NOT check collision with the root node, or else ALL collisions will hit the skybox! Always make a separate node for objects you want to collide with.
+            shootables.collideWith(ray, results);
+            // 4. Print the results
+            System.out.println("----- Collisions? " + results.size() + "-----");
+            // 5. Use the results (we mark the hit object)
+            if (results.size() > 0) {
+                // The closest collision point is what was truly hit:
+                CollisionResult closest = results.getClosestCollision();
+                String hit = closest.getGeometry().getName();
+                float dist = closest.getDistance();
+                Vector3f pt = closest.getContactPoint();
+                System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
+                deleteCube(Cube.parseName(hit));
+                // Let's interact - we mark the hit with a red dot.
+                mark.setLocalTranslation(closest.getContactPoint());
+                rootNode.attachChild(mark);
+            } else {
+                // No hits? Then remove the red mark.
+                rootNode.detachChild(mark);
+            }
+        } else if (binding.equals("Jump")) {
+            if (isPressed) {
+                player.jump();
+            }
         } else if (binding.equals("Left")) {
             left = isPressed;
         } else if (binding.equals("Right")) {
@@ -273,10 +315,6 @@ public class Blocks extends SimpleApplication implements ActionListener {
             up = isPressed;
         } else if (binding.equals("Down")) {
             down = isPressed;
-        } else if (binding.equals("Jump")) {
-            if (isPressed) {
-                player.jump();
-            }
         }
     }
 

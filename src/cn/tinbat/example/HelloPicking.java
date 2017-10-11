@@ -36,7 +36,6 @@ public class HelloPicking extends SimpleApplication {
         initCrossHairs(); // a "+" in the middle of the screen to help aiming
         initKeys();       // load custom key mappings
         initMark();       // a red sphere to mark the hit
-
         /** create four colored boxes and a floor to shoot at: */
         shootables = new Node("Shootables");
         rootNode.attachChild(shootables);

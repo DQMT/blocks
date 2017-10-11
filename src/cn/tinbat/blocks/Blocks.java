@@ -50,11 +50,13 @@ public class Blocks extends SimpleApplication implements ActionListener {
     @Override
     public void simpleInitApp() {
         //初始化相机
-        cam.setLocation(new Vector3f(0, 4f, 6f));
+        cam.setLocation(new Vector3f(0f, 3.5f, 0f));
         cam.lookAt(new Vector3f(2, 2, 0), Vector3f.UNIT_Y);
+        flyCam.setMoveSpeed(1f);
+
 
         bulletAppState = new BulletAppState();
-        bulletAppState.setSpeed(0.5f); //改变物理世界速度
+        bulletAppState.setSpeed(1f); //改变物理世界速度
         stateManager.attach(bulletAppState);
 
         shootables = new Node("Shootables");
@@ -65,7 +67,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
 
         // 初始化场景
         initScene();
-        flyCam.setMoveSpeed(1f);
+
 
         //初始化玩家
         initPlayer();
@@ -80,10 +82,10 @@ public class Blocks extends SimpleApplication implements ActionListener {
 
     private void initPlayer() {
 
-        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f * SysConstant.Public.CUBE_SIZE, 3.8f * SysConstant.Public.CUBE_SIZE, 1);
-        player = new CharacterControl(capsuleShape, 1f);
-        player.setJumpSpeed(30);
-        player.setFallSpeed(40);
+        CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f * SysConstant.Public.CUBE_RADIUS, 3.5f * SysConstant.Public.CUBE_RADIUS, 1);
+        player = new CharacterControl(capsuleShape, 0.05f);
+        player.setJumpSpeed(35);
+        player.setFallSpeed(30);
         player.setGravity(98);
         player.setPhysicsLocation(new Vector3f(0, 10, 0));
         bulletAppState.getPhysicsSpace().add(player);
@@ -154,19 +156,27 @@ public class Blocks extends SimpleApplication implements ActionListener {
         }
         System.out.println("makeCube:" + cube.toString());
         // 网格
-        Box box = new Box(SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE);
+        Box box = new Box(SysConstant.Public.CUBE_RADIUS, SysConstant.Public.CUBE_RADIUS, SysConstant.Public.CUBE_RADIUS);
         box.scaleTextureCoordinates(new Vector2f(1f, .5f));
 
         // 材质
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        Texture tex = assetManager.loadTexture("Textures/Terrain/Pond/Pond.jpg");
-
+        Texture tex1 = assetManager.loadTexture("Textures/Terrain/Pond/Pond.jpg");
+        Texture tex2 = assetManager.loadTexture("Textures/Terrain/Rock2/rock.jpg");
         // 间隔材质便于观察
-        if (cube.isOdd()) {
-            mat.setTexture("ColorMap", tex);
+
+        if (cube.x == 0 && cube.y == 0 && cube.z == 0) {
+            mat.setColor("Color", ColorRGBA.White);
+        } else if (cube.x == 0 && cube.y == 0) {
+            mat.setColor("Color", ColorRGBA.Green);
+        } else if (cube.z == 0 && cube.y == 0) {
+            mat.setColor("Color", ColorRGBA.Red);
+        } else if (cube.isOdd()) {
+            mat.setTexture("ColorMap", tex1);
         } else {
-            mat.setColor("Color", ColorRGBA.Pink);
+            mat.setTexture("ColorMap", tex2);
         }
+
 
         // 几何体
         Geometry geom = new Geometry(cube.name(), box);
@@ -177,7 +187,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
         // 刚体
         RigidBodyControl rigidBody = new RigidBodyControl(0f);
         geom.addControl(rigidBody);
-        rigidBody.setCollisionShape(new BoxCollisionShape(new Vector3f(SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE)));
+        rigidBody.setCollisionShape(new BoxCollisionShape(new Vector3f(SysConstant.Public.CUBE_RADIUS, SysConstant.Public.CUBE_RADIUS, SysConstant.Public.CUBE_RADIUS)));
 
         shootables.attachChild(geom);
         bulletAppState.getPhysicsSpace().add(rigidBody);
@@ -230,9 +240,8 @@ public class Blocks extends SimpleApplication implements ActionListener {
      */
     private void setUpKeys() {
         inputManager.addMapping("MouseLeft", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
-        inputManager.addListener(this, "MouseLeft");
         inputManager.addMapping("MouseRight", new MouseButtonTrigger(MouseInput.BUTTON_RIGHT));
-        inputManager.addListener(this, "MouseRight");
+        inputManager.addMapping("UserLog", new KeyTrigger(KeyInput.KEY_LCONTROL));
         inputManager.addMapping("Left", new KeyTrigger(KeyInput.KEY_A));
         inputManager.addMapping("Right", new KeyTrigger(KeyInput.KEY_D));
         inputManager.addMapping("Up", new KeyTrigger(KeyInput.KEY_W));
@@ -243,6 +252,9 @@ public class Blocks extends SimpleApplication implements ActionListener {
         inputManager.addListener(this, "Up");
         inputManager.addListener(this, "Down");
         inputManager.addListener(this, "Jump");
+        inputManager.addListener(this, "MouseLeft");
+        inputManager.addListener(this, "MouseRight");
+        inputManager.addListener(this, "UserLog");
     }
 
     /**
@@ -250,7 +262,14 @@ public class Blocks extends SimpleApplication implements ActionListener {
      * We do not walk yet, we just keep track of the direction the user pressed.
      */
     public void onAction(String binding, boolean isPressed, float tpf) {
-        if (binding.equals("MouseRight") && !isPressed) {
+        if (binding.equals("UserLog") && !isPressed) {
+            System.out.println("UserLog：");
+            Vector3f camV = cam.getLocation();
+            System.out.println("cam = " + camV);
+            Vector3f playerV = player.getPhysicsLocation();
+            System.out.println("player = " + playerV);
+
+        } else if (binding.equals("MouseRight") && !isPressed) {
             // 1. Reset results list.
             CollisionResults results = new CollisionResults();
             // 2. Aim the ray from cam loc to cam direction.
@@ -268,11 +287,15 @@ public class Blocks extends SimpleApplication implements ActionListener {
                 float dist = closest.getDistance();
                 Vector3f pt = closest.getContactPoint();
                 System.out.println("  You shot " + hit + " at " + pt + ", " + dist + " wu away.");
-                Cube hitCube = Cube.parseName(hit);
-                makeCube(hitCube.makeAdjacentCube(pt));
+                Cube newCube = Cube.parseName(hit).makeAdjacentCube(pt);
+                if(newCube.isPlayer(player.getPhysicsLocation())){
+                    System.out.println("Player is here!");
+                    return;
+                }
+                makeCube(newCube);
                 // Let's interact - we mark the hit with a red dot.
                 mark.setLocalTranslation(closest.getContactPoint());
-                rootNode.attachChild(mark);
+                //rootNode.attachChild(mark);
             } else {
                 // No hits? Then remove the red mark.
                 rootNode.detachChild(mark);
@@ -298,16 +321,18 @@ public class Blocks extends SimpleApplication implements ActionListener {
                 deleteCube(Cube.parseName(hit));
                 // Let's interact - we mark the hit with a red dot.
                 mark.setLocalTranslation(closest.getContactPoint());
-                rootNode.attachChild(mark);
+                //rootNode.attachChild(mark);
             } else {
                 // No hits? Then remove the red mark.
                 rootNode.detachChild(mark);
             }
-        } else if (binding.equals("Jump")) {
+        }
+        if (binding.equals("Jump")) {
             if (isPressed) {
                 player.jump();
             }
-        } else if (binding.equals("Left")) {
+        }
+        if (binding.equals("Left")) {
             left = isPressed;
         } else if (binding.equals("Right")) {
             right = isPressed;
@@ -358,6 +383,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
         if (down) {
             walkDirection.addLocal(camDir.negate());
         }
+
         player.setWalkDirection(walkDirection);
         cam.setLocation(player.getPhysicsLocation());
     }
@@ -365,5 +391,8 @@ public class Blocks extends SimpleApplication implements ActionListener {
     public static void main(String[] args) {
         Blocks app = new Blocks();
         app.start();
+//        Vector3f vector3f = new Vector3f(-0.9f,0,0);
+
+//        System.out.println(Cube.parsePosition(vector3f));
     }
 }

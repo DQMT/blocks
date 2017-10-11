@@ -15,14 +15,40 @@ import java.util.List;
 public class Cube implements Savable, Cloneable, Serializable {
 
     public enum AXIS {
-      X,Y,Z;
+        X, Y, Z;
     }
 
     public static final Cube ZERO = new Cube(0, 0, 0);
 
-    public static Cube parseName(String name){
-        String[] array = name.substring(1,name.length()-1).split(",");
-        return new Cube(Integer.valueOf(array[0]),Integer.valueOf(array[1]),Integer.valueOf(array[2]));
+    public static Cube parseName(String name) {
+        String[] array = name.substring(1, name.length() - 1).split(",");
+        return new Cube(Integer.valueOf(array[0]), Integer.valueOf(array[1]), Integer.valueOf(array[2]));
+    }
+
+    public static Cube parseLocation(Vector3f vector3f) {
+        int intX, intY, intZ;
+        if (vector3f.x == 0) {
+            intX = 0;
+        } else if (vector3f.x > 0) {
+            intX = (int) ((vector3f.x + SysConstant.Public.CUBE_RADIUS) / SysConstant.Public.CUBE_SIZE);
+        } else {
+            intX = (int) ((vector3f.x - SysConstant.Public.CUBE_RADIUS) / SysConstant.Public.CUBE_SIZE);
+        }
+        if (vector3f.y == 0) {
+            intY = 0;
+        } else if (vector3f.y > 0) {
+            intY = (int) ((vector3f.y + SysConstant.Public.CUBE_RADIUS) / SysConstant.Public.CUBE_SIZE);
+        } else {
+            intY = (int) ((vector3f.y - SysConstant.Public.CUBE_RADIUS) / SysConstant.Public.CUBE_SIZE);
+        }
+        if (vector3f.z == 0) {
+            intZ = 0;
+        } else if (vector3f.z > 0) {
+            intZ = (int) ((vector3f.z + SysConstant.Public.CUBE_RADIUS) / SysConstant.Public.CUBE_SIZE);
+        } else {
+            intZ = (int) ((vector3f.z - SysConstant.Public.CUBE_RADIUS) / SysConstant.Public.CUBE_SIZE);
+        }
+        return new Cube(intX, intY, intZ);
     }
 
     public int x;
@@ -71,7 +97,7 @@ public class Cube implements Savable, Cloneable, Serializable {
     }
 
     public String name() {
-        return "{"+x + "," + y + "," + z+"}";
+        return "{" + x + "," + y + "," + z + "}";
     }
 
     @Override
@@ -97,7 +123,7 @@ public class Cube implements Savable, Cloneable, Serializable {
     }
 
     public Vector3f toCubeLocation() {
-        return new Vector3f(x * SysConstant.Public.CUBE_SIZE * 2, y * SysConstant.Public.CUBE_SIZE * 2, z * SysConstant.Public.CUBE_SIZE * 2);
+        return new Vector3f(x * SysConstant.Public.CUBE_SIZE, y * SysConstant.Public.CUBE_SIZE, z * SysConstant.Public.CUBE_SIZE);
     }
 
     public Cube reverseX() {
@@ -112,13 +138,18 @@ public class Cube implements Savable, Cloneable, Serializable {
         return new Cube(x, y, -z);
     }
 
-    public Cube shift(){
+    public Cube shift() {
         return new Cube(z, x, y);
+    }
+
+    public Cube upCube() {
+        return new Cube(x, y + 1, z);
     }
 
     /**
      * 以原点为中心
      * 返回在this在八个卦限中8个小立方体的3*8个面上对应的向量组
+     *
      * @return
      */
     public List<Cube> toCubeVectors() {
@@ -153,12 +184,13 @@ public class Cube implements Savable, Cloneable, Serializable {
         cubeList.add(cube3.reverseX().reverseY());
         cubeList.add(cube3.reverseZ().reverseY());
         cubeList.add(cube3.reverseX().reverseZ().reverseY());
-       return cubeList;
+        return cubeList;
 
     }
 
     /**
      * 创建一个围成立方体表面的向量组
+     *
      * @param radius
      * @return
      */
@@ -167,38 +199,61 @@ public class Cube implements Savable, Cloneable, Serializable {
         for (int i = 0; i < radius; i++) {
             for (int j = 0; j < radius; j++) {
                 Cube vt = new Cube(i, radius, j);
-                    cubeList.addAll(vt.toCubeVectors());
+                cubeList.addAll(vt.toCubeVectors());
             }
         }
         return cubeList;
     }
 
-    public Cube makeAdjacentCube(Vector3f vector3f){
-        System.out.print("makeAdjacentCube"+this.name()+vector3f);
-        if(MathUtil.compareFloat(vector3f.x,2*SysConstant.Public.CUBE_SIZE*x+SysConstant.Public.CUBE_SIZE )==0){
-            System.out.println("x+1");
-            return new Cube(x+1,y,z);
+    /**
+     * 根据射线与cube表面交点计算出相邻的cube
+     *
+     * @param vector3f
+     * @return
+     */
+    public Cube makeAdjacentCube(Vector3f vector3f) {
+        System.out.println("makeAdjacentCube" + this.name() + vector3f);
+        if (MathUtil.compareFloat(vector3f.x, SysConstant.Public.CUBE_SIZE * x + SysConstant.Public.CUBE_RADIUS) == 0) {
+            return new Cube(x + 1, y, z);
         }
-        if(MathUtil.compareFloat(vector3f.x,2*SysConstant.Public.CUBE_SIZE*x-SysConstant.Public.CUBE_SIZE )==0){
-            System.out.println("x-1");
-            return new Cube(x-1,y,z);
+        if (MathUtil.compareFloat(vector3f.x, SysConstant.Public.CUBE_SIZE * x - SysConstant.Public.CUBE_RADIUS) == 0) {
+            return new Cube(x - 1, y, z);
         }
-        if(MathUtil.compareFloat(vector3f.y,2*SysConstant.Public.CUBE_SIZE*y+SysConstant.Public.CUBE_SIZE )==0){
-            System.out.println("y+1");
-            return new Cube(x,y+1,z);
+        if (MathUtil.compareFloat(vector3f.y, SysConstant.Public.CUBE_SIZE * y + SysConstant.Public.CUBE_RADIUS) == 0) {
+            return new Cube(x, y + 1, z);
         }
-        if(MathUtil.compareFloat(vector3f.y,2*SysConstant.Public.CUBE_SIZE*y-SysConstant.Public.CUBE_SIZE)==0){
-            System.out.println("y-1");
-            return new Cube(x,y-1,z);
+        if (MathUtil.compareFloat(vector3f.y, SysConstant.Public.CUBE_SIZE * y - SysConstant.Public.CUBE_RADIUS) == 0) {
+            return new Cube(x, y - 1, z);
         }
-        if(MathUtil.compareFloat(vector3f.z,2*SysConstant.Public.CUBE_SIZE*z+SysConstant.Public.CUBE_SIZE)==0){
-            System.out.println("z+1");
-            return new Cube(x,y,z+1);
+        if (MathUtil.compareFloat(vector3f.z, SysConstant.Public.CUBE_SIZE * z + SysConstant.Public.CUBE_RADIUS) == 0) {
+            return new Cube(x, y, z + 1);
         }
-        if(MathUtil.compareFloat(vector3f.z,2*SysConstant.Public.CUBE_SIZE*z-SysConstant.Public.CUBE_SIZE)==0){
-            System.out.println("z-1");
-            return new Cube(x,y,z-1);
+        if (MathUtil.compareFloat(vector3f.z, SysConstant.Public.CUBE_SIZE * z - SysConstant.Public.CUBE_RADIUS) == 0) {
+            return new Cube(x, y, z - 1);
         }
         return this.clone();
+    }
+
+    /**
+     * 返回中心的坐标
+     *
+     * @return
+     */
+    public Vector3f getPhysicsLocation() {
+        return new Vector3f(SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE);
+    }
+
+    public boolean equals(Cube cube) {
+        return (cube.x == this.x) && (cube.y == this.y) && (cube.z == this.z);
+    }
+
+    public boolean isPlayer(Vector3f playerPhysicsLocation) {
+        System.out.println("test point "+playerPhysicsLocation+"isPlayer");
+        if(playerPhysicsLocation == null){
+            return false;
+        }
+        Cube playerCube = parseLocation(playerPhysicsLocation);
+        System.out.println("playerCube"+playerCube+",and this upCube ="+this.upCube());
+        return this.equals(playerCube) || this.upCube().equals(playerCube);
     }
 }

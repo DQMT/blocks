@@ -7,7 +7,7 @@ import cn.tinbat.cube.Cube;
  */
 public class MathUtil {
     public static boolean getParity(Cube cube) {
-        return getParity(cube.getX() + cube.getY() + cube.getZ());
+        return getParity(cube.x + cube.y + cube.z);
     }
 
     static boolean getParity(int n) {

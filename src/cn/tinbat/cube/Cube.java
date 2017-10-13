@@ -14,6 +14,21 @@ import java.util.List;
 
 public class Cube implements Savable, Cloneable, Serializable {
 
+    public final int x;
+    public final int y;
+    public final int z;
+
+    public Hardness hardness;
+
+    public class Hardness {
+        public boolean breakable;
+        public int hits;
+        public Hardness(){
+            this.breakable = true;
+            this.hits=1;
+        }
+    }
+
     public enum AXIS {
         X, Y, Z;
     }
@@ -51,44 +66,18 @@ public class Cube implements Savable, Cloneable, Serializable {
         return new Cube(intX, intY, intZ);
     }
 
-    public int x;
-    public int y;
-    public int z;
-
-    public int getX() {
-        return x;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    public int getZ() {
-        return z;
-    }
-
-    public void setZ(int z) {
-        this.z = z;
-    }
-
     public Cube() {
         x = 0;
         y = 0;
         z = 0;
+        hardness=new Hardness();
     }
 
     public Cube(int x, int y, int z) {
         this.x = x;
         this.y = y;
         this.z = z;
+        hardness=new Hardness();
     }
 
     @Override
@@ -110,18 +99,23 @@ public class Cube implements Savable, Cloneable, Serializable {
 
     }
 
-    public Cube clone() {
-        return new Cube(x, y, z);
+    public boolean equals(Cube cube) {
+        return (cube.x == this.x) && (cube.y == this.y) && (cube.z == this.z);
     }
 
-    public Vector3f toVector3f() {
-        return new Vector3f(x, y, z);
+    public Cube clone() {
+        return new Cube(x, y, z);
     }
 
     public boolean isOdd() {
         return (x + y + z) % 2 != 0;
     }
 
+    /**
+     * 返回中心坐标
+     *
+     * @return
+     */
     public Vector3f toCubeLocation() {
         return new Vector3f(x * SysConstant.Public.CUBE_SIZE, y * SysConstant.Public.CUBE_SIZE, z * SysConstant.Public.CUBE_SIZE);
     }
@@ -235,25 +229,18 @@ public class Cube implements Savable, Cloneable, Serializable {
     }
 
     /**
-     * 返回中心的坐标
+     * 当前cube是否被player占用
      *
+     * @param playerPhysicsLocation
      * @return
      */
-    public Vector3f getPhysicsLocation() {
-        return new Vector3f(SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE, SysConstant.Public.CUBE_SIZE);
-    }
-
-    public boolean equals(Cube cube) {
-        return (cube.x == this.x) && (cube.y == this.y) && (cube.z == this.z);
-    }
-
     public boolean isPlayer(Vector3f playerPhysicsLocation) {
-        System.out.println("test point "+playerPhysicsLocation+"isPlayer");
-        if(playerPhysicsLocation == null){
+        System.out.println("test point " + playerPhysicsLocation + "isPlayer");
+        if (playerPhysicsLocation == null) {
             return false;
         }
         Cube playerCube = parseLocation(playerPhysicsLocation);
-        System.out.println("playerCube"+playerCube+",and this upCube ="+this.upCube());
+        System.out.println("playerCube" + playerCube + ",and this upCube =" + this.upCube());
         return this.equals(playerCube) || this.upCube().equals(playerCube);
     }
 }

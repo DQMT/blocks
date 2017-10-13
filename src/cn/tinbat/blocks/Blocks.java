@@ -84,9 +84,9 @@ public class Blocks extends SimpleApplication implements ActionListener {
 
         CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f * SysConstant.Public.CUBE_RADIUS, 3.5f * SysConstant.Public.CUBE_RADIUS, 1);
         player = new CharacterControl(capsuleShape, 0.05f);
-        player.setJumpSpeed(35);
-        player.setFallSpeed(30);
-        player.setGravity(98);
+        player.setJumpSpeed(10);
+        player.setFallSpeed(35);
+        player.setGravity(40);
         player.setPhysicsLocation(new Vector3f(0, 10, 0));
         bulletAppState.getPhysicsSpace().add(player);
     }
@@ -177,7 +177,6 @@ public class Blocks extends SimpleApplication implements ActionListener {
             mat.setTexture("ColorMap", tex2);
         }
 
-
         // 几何体
         Geometry geom = new Geometry(cube.name(), box);
         geom.setMaterial(mat);
@@ -200,10 +199,15 @@ public class Blocks extends SimpleApplication implements ActionListener {
      * @param cube
      */
     private void deleteCube(Cube cube) {
-        System.out.println("deleteCube:" + cube.toString());
-        Geometry geom = (Geometry) shootables.getChild(cube.name());
-        bulletAppState.getPhysicsSpace().remove(geom);
-        shootables.detachChildNamed(cube.name());
+        if(cube.hardness.breakable){
+            cube.hardness.hits--;
+            if(cube.hardness.hits<=0){
+                System.out.println("deleteCube:" + cube.toString());
+                Geometry geom = (Geometry) shootables.getChild(cube.name());
+                bulletAppState.getPhysicsSpace().remove(geom);
+                shootables.detachChildNamed(cube.name());
+            }
+        }
     }
 
     /**

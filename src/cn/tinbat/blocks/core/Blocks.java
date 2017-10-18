@@ -1,6 +1,8 @@
 package cn.tinbat.blocks.core;
 
 import cn.tinbat.blocks.constant.SysConstant;
+import cn.tinbat.blocks.creature.Creature;
+import cn.tinbat.blocks.creature.EvilCube;
 import cn.tinbat.blocks.cube.Cube;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
@@ -140,6 +142,16 @@ public class Blocks extends SimpleApplication implements ActionListener {
         makeFloor(new Cube(10, 1, 10));
         //makeCage();
         System.out.println(cubeCount);
+        Cube cube = new Cube(3, 3, 3);
+        makeCube(cube);
+        Creature evilCube = new EvilCube(new Vector3f(15,15,15));
+        makeCreature(evilCube);
+    }
+
+    private void makeCreature(Creature creature){
+        creature.init(assetManager);
+        rootNode.attachChild(creature.getGeometry());
+        bulletAppState.getPhysicsSpace().add(creature.getRigidBody());
     }
 
     /**

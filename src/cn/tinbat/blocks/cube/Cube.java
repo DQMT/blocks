@@ -1,7 +1,7 @@
-package cn.tinbat.cube;
+package cn.tinbat.blocks.cube;
 
-import cn.tinbat.constant.SysConstant;
-import cn.tinbat.math.MathUtil;
+import cn.tinbat.blocks.constant.SysConstant;
+import cn.tinbat.blocks.math.MathUtil;
 import com.jme3.export.JmeExporter;
 import com.jme3.export.JmeImporter;
 import com.jme3.export.Savable;

@@ -1,10 +1,7 @@
-package cn.tinbat.math;
+package cn.tinbat.blocks.math;
 
-import cn.tinbat.cube.Cube;
+import cn.tinbat.blocks.cube.Cube;
 
-/**
- * Created by tincat on 2017/10/5.
- */
 public class MathUtil {
     public static boolean getParity(Cube cube) {
         return getParity(cube.x + cube.y + cube.z);

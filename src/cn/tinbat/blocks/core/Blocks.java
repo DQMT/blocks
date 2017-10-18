@@ -1,7 +1,7 @@
-package cn.tinbat.blocks;
+package cn.tinbat.blocks.core;
 
-import cn.tinbat.constant.SysConstant;
-import cn.tinbat.cube.Cube;
+import cn.tinbat.blocks.constant.SysConstant;
+import cn.tinbat.blocks.cube.Cube;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;

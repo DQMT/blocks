@@ -84,7 +84,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
 
         CapsuleCollisionShape capsuleShape = new CapsuleCollisionShape(1f * SysConstant.Public.CUBE_RADIUS, 3.5f * SysConstant.Public.CUBE_RADIUS, 1);
         player = new CharacterControl(capsuleShape, 0.05f);
-        player.setJumpSpeed(10);
+        player.setJumpSpeed(15);
         player.setFallSpeed(35);
         player.setGravity(40);
         player.setPhysicsLocation(new Vector3f(0, 10, 0));
@@ -112,7 +112,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
      */
     protected void initMark() {
         Sphere sphere = new Sphere(30, 30, 0.2f);
-        mark = new Geometry("BOOM!", sphere);
+        mark = new Geometry("xmark", sphere);
         Material mark_mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mark_mat.setColor("Color", ColorRGBA.Red);
         mark.setMaterial(mark_mat);
@@ -125,7 +125,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
         setDisplayStatView(false);
         guiFont = assetManager.loadFont("Interface/Fonts/Default.fnt");
         BitmapText ch = new BitmapText(guiFont, false);
-        ch.setSize(guiFont.getCharSet().getRenderedSize() * 2);
+        ch.setSize(guiFont.getCharSet().getRenderedSize() * 1);
         ch.setText("+"); // crosshairs
         ch.setLocalTranslation( // center
                 settings.getWidth() / 2 - ch.getLineWidth() / 2, settings.getHeight() / 2 + ch.getLineHeight() / 2, 0);
@@ -137,8 +137,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
      */
     private void initScene() {
         viewPort.setBackgroundColor(new ColorRGBA(0.7f, 0.8f, 1f, 1f));
-        makeFloor(new Cube(10, 3, 10));
-        makeCube(new Cube(0, 5, 0));
+        makeFloor(new Cube(10, 1, 10));
         //makeCage();
         System.out.println(cubeCount);
     }
@@ -174,7 +173,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
         } else if (cube.isOdd()) {
             mat.setTexture("ColorMap", tex1);
         } else {
-            mat.setTexture("ColorMap", tex2);
+            mat.setTexture("ColorMap", tex1);
         }
 
         // 几何体

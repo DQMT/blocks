@@ -8,6 +8,7 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
+import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.bullet.control.CharacterControl;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.collision.CollisionResult;
@@ -79,7 +80,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
         initMark();
 
         // 开启调试模式，这样能够可视化观察物体之间的运动。
-        //bulletAppState.setDebugEnabled(true);
+        bulletAppState.setDebugEnabled(true);
     }
 
     private void initPlayer() {
@@ -88,7 +89,8 @@ public class Blocks extends SimpleApplication implements ActionListener {
         player = new CharacterControl(capsuleShape, 0.05f);
         player.setJumpSpeed(15);
         player.setFallSpeed(35);
-        player.setGravity(40);
+        player.setGravity(0);
+//        player.setGravity(40);
         player.setPhysicsLocation(new Vector3f(0, 10, 0));
         bulletAppState.getPhysicsSpace().add(player);
     }
@@ -146,6 +148,7 @@ public class Blocks extends SimpleApplication implements ActionListener {
         makeCube(cube);
         Creature evilCube = new EvilCube(new Vector3f(15,15,15));
         makeCreature(evilCube);
+        makeSphere();
     }
 
     private void makeCreature(Creature creature){
@@ -204,6 +207,36 @@ public class Blocks extends SimpleApplication implements ActionListener {
         cubeCount++;
     }
 
+    /**
+     * 放置球体
+     *
+     */
+    private void makeSphere(){
+        float size = 100f;
+        Sphere sphere = new Sphere(99, 99, size);
+
+        sphere.setTextureMode(Sphere.TextureMode.Projected);
+
+        mark = new Geometry("sphere1", sphere);
+
+        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+
+        Texture tex1 = assetManager.loadTexture("Textures/Terrain/Pond/Pond.jpg");
+//        Texture tex1 = assetManager.loadTexture("Textures/Terrain/Rock2/rock.jpg");
+        tex1.setWrap(Texture.WrapMode.MirroredRepeat);
+        mat.setTexture("ColorMap",tex1);
+        //mat.setColor("Color", ColorRGBA.Gray);
+        mark.setMaterial(mat);
+        mark.setLocalTranslation(new Vector3f(30, -size, 30));
+        // 刚体
+        RigidBodyControl rigidBody = new RigidBodyControl(0f);
+        mark.addControl(rigidBody);
+        rigidBody.setCollisionShape(new SphereCollisionShape(size));
+
+        rootNode.attachChild(mark);
+        bulletAppState.getPhysicsSpace().add(rigidBody);
+
+    }
     /**
      * 从场景中删除方块
      *

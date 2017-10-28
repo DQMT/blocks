@@ -17,4 +17,7 @@
 	<lib name="lwjgl-platform-2.9.3-natives-windows.jar" scope="COMPILE">
 		<relative-module-cls project-related="jar://$PROJECT_DIR$/libs/lwjgl-platform-2.9.3-natives-windows.jar!/"/>
 	</lib>
+	<levels>
+		<level name="jme-sourcecode" value="project"/>
+	</levels>
 </component>
